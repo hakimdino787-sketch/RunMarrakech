@@ -1,15 +1,2 @@
 using UnityEngine;
-namespace RunMarrakech.Core
-{
-    public sealed class ScorePersistence : MonoBehaviour
-    {
-        public void SaveRun()
-        {
-            if (GameManager.Instance == null) return;
-            RunSaveData data = RunSaveSystem.Load();
-            data.highScore = Mathf.Max(data.highScore, GameManager.Instance.Score);
-            data.totalCoins += GameManager.Instance.Coins;
-            RunSaveSystem.Save(data);
-        }
-    }
-}
+public sealed class ScorePersistence:MonoBehaviour{const string Key="RUN_MARRAKECH_SAVE";public RunSaveData Data{get;private set;}void Awake(){Load();}public void Load(){var j=PlayerPrefs.GetString(Key,"");Data=string.IsNullOrEmpty(j)?new RunSaveData():JsonUtility.FromJson<RunSaveData>(j);}public void Save(){PlayerPrefs.SetString(Key,JsonUtility.ToJson(Data));PlayerPrefs.Save();}}
