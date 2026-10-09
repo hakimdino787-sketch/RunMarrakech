@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace RunMarrakech.Player
 {
+    [RequireComponent(typeof(CharacterController))]
     public sealed class RunnerSlideController : MonoBehaviour
     {
         public CharacterController Controller;
@@ -9,13 +10,30 @@ namespace RunMarrakech.Player
         public float SlideHeight = 1.0f;
         public float NormalHeight = 2.0f;
 
-        float timer;
-        float originalCenterY;
+        private float timer;
+        private float originalCenterY;
+        private RunnerInput runnerInput;
 
-        void Awake()
+        private void Awake()
         {
             if (!Controller) Controller = GetComponent<CharacterController>();
-            if (Controller) { NormalHeight = Controller.height; originalCenterY = Controller.center.y; }
+            runnerInput = GetComponent<RunnerInput>();
+            if (Controller)
+            {
+                NormalHeight = Controller.height;
+                originalCenterY = Controller.center.y;
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (runnerInput == null) runnerInput = GetComponent<RunnerInput>();
+            if (runnerInput != null) runnerInput.SwipeDown += Slide;
+        }
+
+        private void OnDisable()
+        {
+            if (runnerInput != null) runnerInput.SwipeDown -= Slide;
         }
 
         public void Slide()
@@ -23,12 +41,17 @@ namespace RunMarrakech.Player
             if (!Controller || timer > 0f) return;
             timer = SlideDuration;
             Controller.height = SlideHeight;
-            Controller.center = new Vector3(Controller.center.x, originalCenterY - (NormalHeight - SlideHeight) * .5f, Controller.center.z);
+            Controller.center = new Vector3(
+                Controller.center.x,
+                originalCenterY - (NormalHeight - SlideHeight) * 0.5f,
+                Controller.center.z);
         }
 
-        void Update()
+        private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) Slide();
             if (timer <= 0f) return;
+
             timer -= Time.deltaTime;
             if (timer <= 0f && Controller)
             {
