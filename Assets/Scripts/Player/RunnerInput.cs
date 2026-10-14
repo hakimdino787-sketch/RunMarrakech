@@ -4,29 +4,64 @@ namespace RunMarrakech.Player
 {
     public sealed class RunnerInput : MonoBehaviour
     {
-        public float SwipeThreshold = 80f;
-        public System.Action SwipeLeft;
-        public System.Action SwipeRight;
-        public System.Action SwipeUp;
-        public System.Action SwipeDown;
+        [SerializeField] private float swipeThreshold = 80f;
+        private Vector2 start;
+        private bool tracking;
+        private RunnerLaneController lanes;
+        private RunnerJumpController jump;
+        private RunnerSlideController slide;
 
-        Vector2 start;
-        bool tracking;
-
-        void Update()
+        private void Awake()
         {
-            if (Input.touchCount == 0) return;
-            var t = Input.GetTouch(0);
-            if (t.phase == TouchPhase.Began) { start = t.position; tracking = true; }
-            else if (tracking && t.phase == TouchPhase.Ended)
+            lanes = GetComponent<RunnerLaneController>();
+            jump = GetComponent<RunnerJumpController>();
+            slide = GetComponent<RunnerSlideController>();
+        }
+
+        private void Update()
+        {
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
+                {
+                    start = touch.position;
+                    tracking = true;
+                }
+                else if (tracking && (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled))
+                {
+                    tracking = false;
+                    HandleSwipe(touch.position - start);
+                }
+                return;
+            }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                start = Input.mousePosition;
+                tracking = true;
+            }
+            else if (tracking && Input.GetMouseButtonUp(0))
             {
                 tracking = false;
-                var d = t.position - start;
-                if (d.magnitude < SwipeThreshold) return;
-                if (Mathf.Abs(d.x) > Mathf.Abs(d.y))
-                    (d.x > 0 ? SwipeRight : SwipeLeft)?.Invoke();
-                else
-                    (d.y > 0 ? SwipeUp : SwipeDown)?.Invoke();
+                HandleSwipe((Vector2)Input.mousePosition - start);
+            }
+        }
+
+        private void HandleSwipe(Vector2 delta)
+        {
+            if (delta.magnitude < swipeThreshold) return;
+            if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+            {
+                if (lanes != null) lanes.ChangeLane(delta.x > 0f ? 1 : -1);
+            }
+            else if (delta.y > 0f)
+            {
+                if (jump != null) jump.Jump();
+            }
+            else
+            {
+                if (slide != null) slide.Slide();
             }
         }
     }
