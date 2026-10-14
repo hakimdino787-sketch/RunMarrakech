@@ -9,7 +9,8 @@ namespace RunMarrakech.World
             if(!other.CompareTag("Player")) return;
             var gm=GameManager.Instance;
             if(gm && gm.ShieldActive){Destroy(gameObject);return;}
-            Time.timeScale=0f;
+            if (gm) gm.EndRun();
+            else Time.timeScale = 0f;
         }
     }
 }
