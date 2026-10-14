@@ -58,6 +58,19 @@ namespace RunMarrakech.Core
             SpeedBoostActive = false;
         }
 
+        public void ResetRun()
+        {
+            CancelInvoke(nameof(ClearPowerUps));
+            Time.timeScale = 1f;
+            RunSpeed = startSpeed;
+            Distance = 0f;
+            Coins = 0;
+            MagnetActive = false;
+            ShieldActive = false;
+            SpeedBoostActive = false;
+            ScoreMultiplier = 1f;
+        }
+
         public void EndRun()
         {
             if (Score > HighScore) HighScore = Score;
