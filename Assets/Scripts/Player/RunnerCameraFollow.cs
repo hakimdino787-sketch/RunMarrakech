@@ -1,12 +1,16 @@
 using UnityEngine;
+
 namespace RunMarrakech.Player
 {
     public sealed class RunnerCameraFollow : MonoBehaviour
     {
         [SerializeField] private Transform target;
-        [SerializeField] private Vector3 offset = new(0f, 5.5f, -9f);
+        [SerializeField] private Vector3 offset = new Vector3(0f, 5.5f, -9f);
         [SerializeField] private float followSpeed = 8f;
         [SerializeField] private float lookAhead = 8f;
+
+        public Transform Target { get => target; set => target = value; }
+        public Vector3 Offset { get => offset; set => offset = value; }
 
         private void LateUpdate()
         {
