@@ -1,2 +1,31 @@
 using UnityEngine;
-public sealed class RunnerLaneController:MonoBehaviour{[SerializeField]float laneWidth=2.2f,laneChangeSpeed=12f,jumpForce=8.5f;int lane=1;CharacterController cc;Vector3 velocity;void Awake(){cc=GetComponent<CharacterController>();}void Update(){float input=Input.GetAxisRaw("Horizontal");if(Input.touchCount>0){var t=Input.GetTouch(0);if(t.phase==TouchPhase.Ended){var d=t.position-t.rawPosition;if(Mathf.Abs(d.x)>80)input=Mathf.Sign(d.x);}}if(input>.5f){lane=Mathf.Min(2,lane+1);input=0;}else if(input<-.5f){lane=Mathf.Max(0,lane-1);input=0;}var p=transform.position;p.x=Mathf.MoveTowards(p.x,(lane-1)*laneWidth,laneChangeSpeed*Time.deltaTime);transform.position=p;if(cc.isGrounded&&Input.GetKeyDown(KeyCode.Space))velocity.y=jumpForce;velocity.y+=Physics.gravity.y*Time.deltaTime;cc.Move(velocity*Time.deltaTime);}}
+using RunMarrakech.Core;
+
+public sealed class RunnerLaneController : MonoBehaviour
+{
+    [SerializeField] private float laneWidth = 2.2f;
+    [SerializeField] private float laneChangeSpeed = 12f;
+    private int lane = 1;
+    private CharacterController controller;
+
+    private void Awake()
+    {
+        controller = GetComponent<CharacterController>();
+    }
+
+    private void Update()
+    {
+        float targetX = (lane - 1) * laneWidth;
+        float deltaX = Mathf.MoveTowards(transform.position.x, targetX, laneChangeSpeed * Time.deltaTime) - transform.position.x;
+        float forwardSpeed = GameManager.Instance != null ? GameManager.Instance.RunSpeed : 8f;
+        Vector3 motion = new Vector3(deltaX, 0f, forwardSpeed * Time.deltaTime);
+        if (controller != null) controller.Move(motion);
+        else transform.position += motion;
+    }
+
+    public void ChangeLane(int direction)
+    {
+        if (direction > 0) lane = Mathf.Min(2, lane + 1);
+        else if (direction < 0) lane = Mathf.Max(0, lane - 1);
+    }
+}
