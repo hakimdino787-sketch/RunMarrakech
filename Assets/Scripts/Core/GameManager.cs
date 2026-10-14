@@ -58,6 +58,13 @@ namespace RunMarrakech.Core
             SpeedBoostActive = false;
         }
 
+        public void EndRun()
+        {
+            if (Score > HighScore) HighScore = Score;
+            SaveRun();
+            Time.timeScale = 0f;
+        }
+
         public void SaveRun()
         {
             PlayerPrefs.SetInt("RM_HighScore", HighScore);
